@@ -1,6 +1,6 @@
-# Pipecat Quickstart
+# Pipecat Quickstart (Daily + OpenAI focus)
 
-Build and deploy your first voice AI bot in under 10 minutes. Develop locally, then scale to production on Pipecat Cloud.
+Build and deploy your first voice AI bot in under 10 minutes. Develop locally on Daily transport, then scale to production on Pipecat Cloud. This copy keeps the Daily path and OpenAI services as the focus.
 
 **Two steps**: [🏠 Local Development](#run-your-bot-locally) → [☁️ Production Deployment](#deploy-to-production)
 
@@ -15,13 +15,16 @@ Build and deploy your first voice AI bot in under 10 minutes. Develop locally, t
 
 #### AI Service API keys
 
-You'll need API keys from three services:
+You'll need API keys from:
 
-- [Deepgram](https://console.deepgram.com/signup) for Speech-to-Text
-- [OpenAI](https://auth.openai.com/create-account) for LLM inference
-- [Cartesia](https://play.cartesia.ai/sign-up) for Text-to-Speech
+- [OpenAI](https://auth.openai.com/create-account) for LLM (and optional OpenAI TTS if you switch the code)
 
-> 💡 **Tip**: Sign up for all three now. You'll need them for both local and cloud deployment.
+> 💡 **Tip**: Sign up for OpenAI now. You'll need it for both local and cloud deployment.
+
+### Daily room + API key: where to get them
+- From your own Daily dashboard: use your Daily domain (e.g., `https://your-domain.daily.co/...`) and API key from the Daily developer settings.
+- From Pipecat Cloud’s “Daily” panel: it shows a Pipecat-managed Daily domain (e.g., `https://cloud-....daily.co/...`) and its API key. If you use that domain, the API key must come from that same panel.
+- Domain/key must match: you can only mint tokens for rooms on the same Daily domain as the API key you use.
 
 ### Setup
 
@@ -42,12 +45,13 @@ Navigate to the quickstart directory and set up your environment.
    cp env.example .env
    ```
 
-   Then, add your API keys:
+   Then, add your keys (OpenAI required; Daily values if you join a Daily room):
 
    ```ini
-   DEEPGRAM_API_KEY=your_deepgram_api_key
    OPENAI_API_KEY=your_openai_api_key
-   CARTESIA_API_KEY=your_cartesia_api_key
+   DAILY_API_KEY=your_daily_api_key          # optional if minting tokens
+   ROOM_URL=https://your-domain.daily.co/room # optional; for static room joins
+   DAILY_TOKEN=your_meeting_token             # optional; or mint via DAILY_API_KEY
    ```
 
 3. Set up a virtual environment and install dependencies
@@ -65,6 +69,24 @@ uv run bot.py
 **Open http://localhost:7860 in your browser** and click `Connect` to start talking to your bot.
 
 > 💡 First run note: The initial startup may take ~20 seconds as Pipecat downloads required models and imports.
+
+### Alternate: join a specific Daily room (static)
+
+If you want the bot to join a specific Daily room using `ROOM_URL` + `DAILY_TOKEN` (or mint a token with `DAILY_API_KEY`), use the simplified `bot_simple.py`:
+
+```bash
+uv run bot_simple.py
+```
+
+Env needed: `OPENAI_API_KEY`, `ROOM_URL`, plus either `DAILY_TOKEN` or `DAILY_API_KEY` (domain must match the room).
+
+To use this path:
+1) Copy `env.example` → `.env` and fill:
+   - `OPENAI_API_KEY`
+   - `ROOM_URL=https://<your-daily-domain>.daily.co/<room>`
+   - `DAILY_TOKEN=<meeting-token>` (or omit and set `DAILY_API_KEY` to mint one)
+2) Run: `uv sync && uv run bot_simple.py`
+This does not start the localhost WebRTC server; it joins your specified Daily room directly.
 
 🎉 **Success!** Your bot is running locally. Now let's deploy it to production so others can use it.
 
