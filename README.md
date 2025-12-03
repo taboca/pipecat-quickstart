@@ -1,10 +1,8 @@
-# Pipecat Quickstart (Daily + OpenAI focus)
+# Demo of a Voice Assistant Bot entering a Daily.co Meeting
 
-Build and deploy your first voice AI bot in under 10 minutes. Develop locally on Daily transport, then scale to production on Pipecat Cloud. This copy keeps the Daily path and OpenAI services as the focus.
+This focuses on the simple path: join a specific Daily room with OpenAI STT/LLM/TTS via `bot_simple.py`. For the full upstream quickstart (RTVI/local WebRTC server, multiple transports), see: https://github.com/pipecat-ai/pipecat-quickstart
 
-**Two steps**: [🏠 Local Development](#run-your-bot-locally) → [☁️ Production Deployment](#deploy-to-production)
-
-## Step 1: Local Development (5 min)
+## Local run (Daily static room)
 
 ### Prerequisites
 
@@ -13,17 +11,14 @@ Build and deploy your first voice AI bot in under 10 minutes. Develop locally on
 - Python 3.10 or later
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) package manager installed
 
-#### AI Service API keys
+#### API key and room
+- `OPENAI_API_KEY` (required) for STT/LLM/TTS.
+- `ROOM_URL` for the Daily room you want to join.
+- Either `DAILY_TOKEN` for that room, or `DAILY_API_KEY` that can mint a token for that same Daily domain.
 
-You'll need API keys from:
-
-- [OpenAI](https://auth.openai.com/create-account) for LLM (and optional OpenAI TTS if you switch the code)
-
-> 💡 **Tip**: Sign up for OpenAI now. You'll need it for both local and cloud deployment.
-
-### Daily room + API key: where to get them
-- From your own Daily dashboard: use your Daily domain (e.g., `https://your-domain.daily.co/...`) and API key from the Daily developer settings.
-- From Pipecat Cloud’s “Daily” panel: it shows a Pipecat-managed Daily domain (e.g., `https://cloud-....daily.co/...`) and its API key. If you use that domain, the API key must come from that same panel.
+Daily room + API key sources:
+- Your own Daily dashboard (e.g., `https://your-domain.daily.co/...` + its API key).
+- Pipecat Cloud “Daily” panel (shows a Pipecat-managed domain like `https://cloud-....daily.co/...` + its API key).
 - Domain/key must match: you can only mint tokens for rooms on the same Daily domain as the API key you use.
 
 ### Setup
@@ -37,7 +32,7 @@ Navigate to the quickstart directory and set up your environment.
    cd pipecat-quickstart
    ```
 
-2. Configure your API keys:
+2. Configure your keys:
 
    Create a `.env` file:
 
@@ -45,7 +40,7 @@ Navigate to the quickstart directory and set up your environment.
    cp env.example .env
    ```
 
-   Then, add your keys (OpenAI required; Daily values if you join a Daily room):
+   Then, add your keys:
 
    ```ini
    OPENAI_API_KEY=your_openai_api_key
@@ -60,19 +55,7 @@ Navigate to the quickstart directory and set up your environment.
    uv sync
    ```
 
-### Run your bot locally
-
-```bash
-uv run bot.py
-```
-
-**Open http://localhost:7860 in your browser** and click `Connect` to start talking to your bot.
-
-> 💡 First run note: The initial startup may take ~20 seconds as Pipecat downloads required models and imports.
-
-### Alternate: join a specific Daily room (static)
-
-If you want the bot to join a specific Daily room using `ROOM_URL` + `DAILY_TOKEN` (or mint a token with `DAILY_API_KEY`), use the simplified `bot_simple.py`:
+### Run your bot locally (static room)
 
 ```bash
 uv run bot_simple.py
@@ -88,108 +71,10 @@ To use this path:
 2) Run: `uv sync && uv run bot_simple.py`
 This does not start the localhost WebRTC server; it joins your specified Daily room directly.
 
-🎉 **Success!** Your bot is running locally. Now let's deploy it to production so others can use it.
+If you need the full upstream quickstart flow (RTVI runner, local WebRTC server at http://localhost:7860, multiple transports), see: https://github.com/pipecat-ai/pipecat-quickstart
 
 ---
 
-## Step 2: Deploy to Production (5 min)
+## More
 
-Transform your local bot into a production-ready service. Pipecat Cloud handles scaling, monitoring, and global deployment.
-
-### Prerequisites
-
-1. [Sign up for Pipecat Cloud](https://pipecat.daily.co/sign-up).
-
-2. Set up Docker for building your bot image:
-
-   - **Install [Docker](https://www.docker.com/)** on your system
-   - **Create a [Docker Hub](https://hub.docker.com/) account**
-   - **Login to Docker Hub:**
-
-     ```bash
-     docker login
-     ```
-
-3. Install the Pipecat CLI
-
-   ```bash
-   uv tool install pipecat-ai-cli
-   ```
-
-   > Tip: You can run the `pipecat` CLI using the `pc` alias.
-
-### Configure your deployment
-
-The `pcc-deploy.toml` file tells Pipecat Cloud how to run your bot. **Update the image field** with your Docker Hub username by editing `pcc-deploy.toml`.
-
-```ini
-agent_name = "quickstart"
-image = "YOUR_DOCKERHUB_USERNAME/quickstart:0.1"  # 👈 Update this line
-secret_set = "quickstart-secrets"
-
-[scaling]
-	min_agents = 1
-```
-
-**Understanding the TOML file settings:**
-
-- `agent_name`: Your bot's name in Pipecat Cloud
-- `image`: The Docker image to deploy (format: `username/image:version`)
-- `secret_set`: Where your API keys are stored securely
-- `min_agents`: Number of bot instances to keep ready (1 = instant start)
-
-> 💡 Tip: [Set up `image_credentials`](https://docs.pipecat.ai/deployment/pipecat-cloud/fundamentals/secrets#image-pull-secrets) in your TOML file for authenticated image pulls
-
-### Log in to Pipecat Cloud
-
-To start using the CLI, authenticate to Pipecat Cloud:
-
-```bash
-pipecat cloud auth login
-```
-
-You'll be presented with a link that you can click to authenticate your client.
-
-### Configure secrets
-
-Upload your API keys to Pipecat Cloud's secure storage:
-
-```bash
-pipecat cloud secrets set quickstart-secrets --file .env
-```
-
-This creates a secret set called `quickstart-secrets` (matching your TOML file) and uploads all your API keys from `.env`.
-
-### Build and deploy
-
-Build your Docker image and push to Docker Hub:
-
-```bash
-pipecat cloud docker build-push
-```
-
-Deploy to Pipecat Cloud:
-
-```bash
-pipecat cloud deploy
-```
-
-### Connect to your agent
-
-1. Open your [Pipecat Cloud dashboard](https://pipecat.daily.co/)
-2. Select your `quickstart` agent → **Sandbox**
-3. Allow microphone access and click **Connect**
-
----
-
-## What's Next?
-
-**🔧 Customize your bot**: Modify `bot.py` to change personality, add functions, or integrate with your data  
-**📚 Learn more**: Check out [Pipecat's docs](https://docs.pipecat.ai/) for advanced features  
-**💬 Get help**: Join [Pipecat's Discord](https://discord.gg/pipecat) to connect with the community
-
-### Troubleshooting
-
-- **Browser permissions**: Allow microphone access when prompted
-- **Connection issues**: Try a different browser or check VPN/firewall settings
-- **Audio issues**: Verify microphone and speakers are working and not muted
+For the full upstream quickstart (RTVI runner, localhost dev server, and broader Pipecat Cloud deployment docs), see: https://github.com/pipecat-ai/pipecat-quickstart
